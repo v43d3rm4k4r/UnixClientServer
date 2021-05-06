@@ -35,6 +35,10 @@ void TCPServer::bind()
 //==================================================================================
 void TCPServer::listen(int32_t backlog/*=5*/)									
 {
+	if (_show_extra_info && backlog > 5)
+	{
+		std::cout << "[SERVER] warning: backlog is more than 5" << std::endl;
+	}
 	if (::listen(_server_sockfd, backlog) == -1)
 	{
 		perror("[SERVER] listen() error");
