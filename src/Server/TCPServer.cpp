@@ -10,7 +10,7 @@ TCPServer::TCPServer(int32_t port/*=34543*/)
 	bind();
 	_addr.sin_family = AF_NET;
 	_addr.sin_port = htons(port);
-	//_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+	//_addr.sin_addr.s_addr = htonl(INADDR_ANY); // not needed while _addr{0}
 }
 //==================================================================================
 int32_t TCPServer::socket(int32_t domain, int32_t sock_type, int32_t protocol)
@@ -72,7 +72,7 @@ ssize_t TCPServer::read(void* buf, size_t buf_size)
 	if (_echo_mode)
 	{
 		std::cout << "[ECHO SERVER] \"";
-		write(STDOUT_FILENO, buf, bytes_readed);
+		::write(STDOUT_FILENO, buf, bytes_readed); // using outer write() due to avoid writing extra info
 		std::cout << "\"" << std::endl;
 	}
 	return bytes_readed;
@@ -93,13 +93,9 @@ ssize_t TCPServer::write(int32_t fd, const void* buf, size_t buf_size)
 	return bytes_wrote;
 }
 //==================================================================================
-void TCPServer::close(int32_t fd)
+int32_t TCPServer::getSocket() const
 {
-	if (::close(fd) == -1)
-	{
-		perror("[SERVER] close() error");
-		exit(EXIT_FAILURE);
-	}
+	return _server_sockfd;
 }
 //==================================================================================
 void TCPServer::setShowExtraInfo(bool flag)
@@ -120,10 +116,4 @@ void TCPServer::setEchoMode(bool flag)
 bool TCPServer::setEchoMode() const
 {
 	return _echo_mode;
-}
-//==================================================================================
-TCPServer::~TCPServer()
-{
-	close(_server_sockfd);
-	close(_addr);
 }
