@@ -12,6 +12,8 @@
 #include <cstdlib>
 #include <cstdint>
 
+#include <../Protocol/Protocol.h> // used in example program
+
 #define DEFAULT_PORT    34543
 #define DEFAULT_BACKLOG 5     // maximum queue length
 
@@ -24,6 +26,7 @@ class TCPServer
     bool _show_extra_info;
     bool _echo_mode;
 
+    void print(std::string str, const char* func = __PRETTY_FUNCTION__);
     int32_t socket(int32_t domain, int32_t sock_type, int32_t protocol);
     void bind();                                                         
 
@@ -31,7 +34,6 @@ public:
     TCPServer(int32_t port = DEFAULT_PORT);
     TCPServer           (const TCPServer&) = delete;
     TCPServer& operator=(const TCPServer&) = delete;
-    ~TCPServer();
 
     int32_t getSocket() const;
 
@@ -43,6 +45,7 @@ public:
 
     void    listen(int32_t backlog = DEFAULT_BACKLOG);
     int32_t accept();
-    ssize_t read  (void* buf, size_t buf_size);
+    ssize_t read  (int32_t fd, void* buf, size_t buf_size);
     ssize_t write (int32_t fd, const void* buf, size_t buf_size);
+    void    close ();
 };

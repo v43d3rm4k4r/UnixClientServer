@@ -2,23 +2,25 @@
 
 TCPServer::TCPServer(int32_t port/*=34543*/)
 	: _server_sockfd{0},
-	_addr{0},
+    _addr{ 0, 0, {0}, {0} },
 	_show_extra_info{true},
 	_echo_mode{true}
 {
-	_server_sockfd = socket(AF_NET, SOCK_STREAM, 0);
+    _server_sockfd = socket(AF_INET, SOCK_STREAM, 0);
 	bind();
-	_addr.sin_family = AF_NET;
+    _addr.sin_family = AF_INET;
 	_addr.sin_port = htons(port);
 	//_addr.sin_addr.s_addr = htonl(INADDR_ANY); // not needed while _addr{0}
 }
 //==================================================================================
 int32_t TCPServer::socket(int32_t domain, int32_t sock_type, int32_t protocol)
 {
-	int32_t ret = ::socket(domain, type, protocol);
+    int32_t ret = ::socket(domain, sock_type, protocol);
 	if (ret == -1)
 	{
-		perror("[SERVER] socket() error");
+        print(" error: ");
+        perror(nullptr);
+        close();
 		exit(EXIT_FAILURE);
 	}
 	return ret;
@@ -26,9 +28,11 @@ int32_t TCPServer::socket(int32_t domain, int32_t sock_type, int32_t protocol)
 //==================================================================================
 void TCPServer::bind()
 {
-	if (::bind(_server_sockfd, (struct sockaddr*)&_addr, sizeof(_addr)) == -1)
+    if (::bind(_server_sockfd, reinterpret_cast<struct sockaddr*>(&_addr), sizeof(_addr)) == -1)
 	{
-		perror("[SERVER] bind() error");
+        print(" error: ");
+        perror(nullptr);
+        close();
 		exit(EXIT_FAILURE);
 	}
 }
@@ -37,43 +41,49 @@ void TCPServer::listen(int32_t backlog/*=5*/)
 {
 	if (_show_extra_info && backlog > 5)
 	{
-		std::cout << "[SERVER] warning: backlog is more than 5" << std::endl;
+        print("warning: backlog is more than 5");
 	}
 	if (::listen(_server_sockfd, backlog) == -1)
 	{
-		perror("[SERVER] listen() error");
+        print(" error: ");
+        perror(nullptr);
+        close();
 		exit(EXIT_FAILURE);
 	}
 }
 //==================================================================================
 int32_t TCPServer::accept()
 {
-	int32_t ret = ::accept(_server_sockfd, (struct sockaddr*)&_addr, sizeof(_addr));
+    socklen_t addr_len = sizeof _addr;
+    int32_t ret = ::accept(_server_sockfd, reinterpret_cast<struct sockaddr*>(&_addr), &addr_len);
 	if (ret == -1)
 	{
-		perror("[SERVER] accept() error");
+        print(" error: ");
+        perror(nullptr);
+        close();
 		exit(EXIT_FAILURE);
 	}
 	return ret;
 }
 //==================================================================================
-ssize_t TCPServer::read(void* buf, size_t buf_size)
+ssize_t TCPServer::read(int32_t fd, void* buf, size_t buf_size)
 {
-	ssize_t bytes_readed = ::read(_server_sockfd, buf, buf_size);
+    ssize_t bytes_readed = ::read(fd, buf, buf_size);
 	if (bytes_readed == -1)
 	{
-		perror("[SERVER] read() error");
+        print(" error: ");
+        perror(nullptr);
+        close();
 		exit(EXIT_FAILURE);
 	}
 	else if (_show_extra_info && bytes_readed == 0)
 	{
-		std::cout << "[SERVER] reading: end of file reached" << std::endl;
+        print("end of file reached");
 	}
 	if (_echo_mode)
 	{
-		std::cout << "[ECHO SERVER] \"";
+        print("echo message: ");
 		::write(STDOUT_FILENO, buf, bytes_readed); // using outer write() due to avoid writing extra info
-		std::cout << "\"" << std::endl;
 	}
 	return bytes_readed;
 }
@@ -83,12 +93,14 @@ ssize_t TCPServer::write(int32_t fd, const void* buf, size_t buf_size)
 	ssize_t bytes_wrote = ::write(fd, buf, buf_size);
 	if (bytes_wrote == -1)
 	{
-		perror("[SERVER] write() error");
+        print(" error: ");
+        perror(nullptr);
+        close();
 		exit(EXIT_FAILURE);
 	}
 	else if (_show_extra_info)
 	{
-		std::cout << "[SERVER] writing: wrote " << bytes_wrote << " bytes" << std::endl;
+        print("wrote " + std::to_string(bytes_wrote) + " bytes");
 	}
 	return bytes_wrote;
 }
@@ -113,7 +125,22 @@ void TCPServer::setEchoMode(bool flag)
 	_echo_mode = flag;
 }
 //==================================================================================
-bool TCPServer::setEchoMode() const
+bool TCPServer::getEchoMode() const
 {
 	return _echo_mode;
+}
+//==================================================================================
+void TCPServer::print(std::string str, const char* func)
+{
+    std::cout << "[SERVER] " << func << ": ";
+
+    if (!str.empty())
+        std::cout << str;
+
+    std::cout << std::endl;
+}
+//==================================================================================
+void TCPServer::close()
+{
+    ::close(_server_sockfd);
 }
