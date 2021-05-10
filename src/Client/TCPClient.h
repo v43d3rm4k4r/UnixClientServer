@@ -12,8 +12,9 @@
 #include <cstdlib>
 #include <cstdint>
 
-#include <../Protocol/Protocol.h> // used in example program
+#include "../Protocol/Protocol.h" // used in example program
 
+#define LOCALHOST       "127.0.0.1"
 #define DEFAULT_PORT    34543
 
 // Note: сlosing client`s socket is after the client application.
@@ -27,9 +28,11 @@ class TCPClient
 
     void print(std::string str, const char* func = __PRETTY_FUNCTION__);
     int32_t socket(int32_t domain, int32_t sock_type, int32_t protocol);
+    void connect();
+    void inet_pton(const char* ip);
 
 public:
-    TCPClient(int32_t port = DEFAULT_PORT);
+    TCPClient(const char* ip = LOCALHOST, int32_t port = DEFAULT_PORT);
     TCPClient           (const TCPClient&) = delete;
     TCPClient& operator=(const TCPClient&) = delete;
 
@@ -41,10 +44,7 @@ public:
     void setEchoMode(bool flag);
     bool getEchoMode() const;
 
-    void connect();
-    void inet_pton(int32_t afamily, const char* src, void* dst);
-                                           
     ssize_t read  (void* buf, size_t buf_size);
-    ssize_t write (int32_t fd, const void* buf, size_t buf_size);
+    ssize_t write (const void* buf, size_t buf_size);
     void    close ();
 };

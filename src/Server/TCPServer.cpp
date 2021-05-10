@@ -41,7 +41,7 @@ void TCPServer::listen(int32_t backlog/*=5*/)
 {
 	if (_show_extra_info && backlog > 5)
 	{
-        print("warning: backlog is more than 5");
+        print(" warning: backlog is more than 5");
 	}
 	if (::listen(_server_sockfd, backlog) == -1)
 	{

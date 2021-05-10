@@ -12,7 +12,7 @@
 #include <cstdlib>
 #include <cstdint>
 
-#include <../Protocol/Protocol.h> // used in example program
+#include "../Protocol/Protocol.h" // used in example program
 
 #define DEFAULT_PORT    34543
 #define DEFAULT_BACKLOG 5     // maximum queue length

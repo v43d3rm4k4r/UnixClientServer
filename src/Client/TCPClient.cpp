@@ -1,6 +1,6 @@
 #include "TCPClient.h"
 
-TCPClient::TCPClient(int32_t port/*=34543*/)
+TCPClient::TCPClient(const char* ip/*=LOCALHOST*/, int32_t port/*=34543*/)
 	: _client_sockfd{0},
     _addr{ 0, 0, {0}, {0} },
 	_show_extra_info{true}
@@ -11,8 +11,8 @@ TCPClient::TCPClient(int32_t port/*=34543*/)
     _addr.sin_family = AF_INET;
 	_addr.sin_port = htons(port);
 	//_addr.sin_addr.s_addr = htonl(INADDR_ANY); // not needed while _addr{0}
-    inet_pton(AF_INET, (struct sockaddr*)&_addr, sizeof(_addr)); // if local server
-	connect(_client_sockfd, (struct sockaddr*)&_addr, sizeof(_addr));
+    inet_pton(ip);
+    connect();
 }
 //==================================================================================
 int32_t TCPClient::socket(int32_t domain, int32_t sock_type, int32_t protocol)
@@ -20,28 +20,29 @@ int32_t TCPClient::socket(int32_t domain, int32_t sock_type, int32_t protocol)
     int32_t ret = ::socket(domain, sock_type, protocol);
 	if (ret == -1)
 	{
-		perror("[CLIENT] socket() error");
+        print(" error: ");
+        perror(nullptr);
         close();
 		exit(EXIT_FAILURE);
 	}
 	return ret;
 }
 //==================================================================================
-void TCPClient::inet_pton(int32_t afamily, const char* src, void* dst)
+void TCPClient::inet_pton(const char* ip)
 {
-	int32_t ret = ::inet_pton(afamily, src, dst);
+    int32_t ret = ::inet_pton(AF_INET, ip, &_addr.sin_addr);
 	if (ret == 0)
 	{
 		// no errno value
-		std::cout << "[CLIENT] inet_pton() error: src does not contain a character"
-		" string representing a valid network address in the specified address family" 
-		<< std::endl;
+        print("error: src does not contain a character"
+        " string representing a valid network address in the specified address family");
         close();
 		exit(EXIT_FAILURE);
 	}
 	else if (ret == -1)
 	{
-		perror("[CLIENT] inet_pton() error");
+        print(" error: ");
+        perror(nullptr);
         close();
 		exit(EXIT_FAILURE);
 	}
@@ -49,20 +50,22 @@ void TCPClient::inet_pton(int32_t afamily, const char* src, void* dst)
 //==================================================================================
 void TCPClient::connect()
 {
-	if (::connect(_client_sockfd, _addr, sizeof(_addr) == -1)
+    if (::connect(_client_sockfd, reinterpret_cast<struct sockaddr*>(&_addr), sizeof(_addr) == -1))
 	{
-		perror("[CLIENT] connect() error");
+        print(" error: ");
+        perror(nullptr);
         close();
 		exit(EXIT_FAILURE);
 	}
 }
 //==================================================================================
-ssize_t TCPClient::read(int32_t fd, void* buf, size_t buf_size)
+ssize_t TCPClient::read(void* buf, size_t buf_size)
 {
-	ssize_t bytes_readed = ::read(fd, buf, buf_size);
+    ssize_t bytes_readed = ::read(_client_sockfd, buf, buf_size);
 	if (bytes_readed == -1)
 	{
-		perror("[CLIENT] read() error");
+        print(" error: ");
+        perror(nullptr);
         close();
 		exit(EXIT_FAILURE);
 	}
@@ -79,12 +82,13 @@ ssize_t TCPClient::read(int32_t fd, void* buf, size_t buf_size)
 	return bytes_readed;
 }
 //==================================================================================
-ssize_t TCPClient::write(int32_t fd, const void* buf, size_t buf_size)
+ssize_t TCPClient::write(const void* buf, size_t buf_size)
 {
-	ssize_t bytes_wrote = ::write(fd, buf, buf_size);
+    ssize_t bytes_wrote = ::write(_client_sockfd, buf, buf_size);
 	if (bytes_wrote == -1)
 	{
-		perror("[CLIENT] write() error");
+        print(" error: ");
+        perror(nullptr);
         close();
 		exit(EXIT_FAILURE);
 	}

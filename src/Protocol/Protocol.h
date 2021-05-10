@@ -3,7 +3,7 @@
 #include <cstddef> // size_t
 #include <cstdint> // uint32_t
 
-#define MAX_FILE_NAME 20U
+#define MAX_FILE_NAME_SIZE 20U
 
 enum class CmdType : uint8_t
 {
@@ -14,20 +14,20 @@ enum class CmdType : uint8_t
     Ready    = 0x04U
 };
 
-struct Msg
+struct MetaData
 {
     CmdType type;
 };
 
-struct MsgUpload
+struct MetaData_Upload
 {
     CmdType type;
     size_t size;
-    char name[MAX_FILE_NAME];
+    char name[MAX_FILE_NAME_SIZE];
 };
 
-struct MsgDownload
+struct MetaData_Download
 {
     CmdType type;
-    char name[MAX_FILE_NAME];
+    char name[MAX_FILE_NAME_SIZE];
 };
