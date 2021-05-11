@@ -7,10 +7,10 @@ TCPServer::TCPServer(int32_t port/*=34543*/)
 	_echo_mode{true}
 {
     _server_sockfd = socket(AF_INET, SOCK_STREAM, 0);
-	bind();
     _addr.sin_family = AF_INET;
 	_addr.sin_port = htons(port);
-	//_addr.sin_addr.s_addr = htonl(INADDR_ANY); // not needed while _addr{0}
+    //_addr.sin_addr.s_addr = htonl(INADDR_ANY); // not needed while _addr{0}
+    bind();
 }
 //==================================================================================
 int32_t TCPServer::socket(int32_t domain, int32_t sock_type, int32_t protocol)
@@ -18,7 +18,7 @@ int32_t TCPServer::socket(int32_t domain, int32_t sock_type, int32_t protocol)
     int32_t ret = ::socket(domain, sock_type, protocol);
 	if (ret == -1)
 	{
-        print(" error: ");
+        print(" error: ", __PRETTY_FUNCTION__);
         perror(nullptr);
         close();
 		exit(EXIT_FAILURE);
@@ -30,7 +30,7 @@ void TCPServer::bind()
 {
     if (::bind(_server_sockfd, reinterpret_cast<struct sockaddr*>(&_addr), sizeof(_addr)) == -1)
 	{
-        print(" error: ");
+        print(" error: ", __PRETTY_FUNCTION__);
         perror(nullptr);
         close();
 		exit(EXIT_FAILURE);
@@ -41,11 +41,11 @@ void TCPServer::listen(int32_t backlog/*=5*/)
 {
 	if (_show_extra_info && backlog > 5)
 	{
-        print(" warning: backlog is more than 5");
+        print(" warning: backlog is more than 5", __PRETTY_FUNCTION__);
 	}
 	if (::listen(_server_sockfd, backlog) == -1)
 	{
-        print(" error: ");
+        print(" error: ", __PRETTY_FUNCTION__);
         perror(nullptr);
         close();
 		exit(EXIT_FAILURE);
@@ -58,7 +58,7 @@ int32_t TCPServer::accept()
     int32_t ret = ::accept(_server_sockfd, reinterpret_cast<struct sockaddr*>(&_addr), &addr_len);
 	if (ret == -1)
 	{
-        print(" error: ");
+        print(" error: ", __PRETTY_FUNCTION__);
         perror(nullptr);
         close();
 		exit(EXIT_FAILURE);
@@ -71,7 +71,7 @@ ssize_t TCPServer::read(int32_t fd, void* buf, size_t buf_size)
     ssize_t bytes_readed = ::read(fd, buf, buf_size);
 	if (bytes_readed == -1)
 	{
-        print(" error: ");
+        print(" error: ", __PRETTY_FUNCTION__);
         perror(nullptr);
         close();
 		exit(EXIT_FAILURE);
@@ -93,14 +93,15 @@ ssize_t TCPServer::write(int32_t fd, const void* buf, size_t buf_size)
 	ssize_t bytes_wrote = ::write(fd, buf, buf_size);
 	if (bytes_wrote == -1)
 	{
-        print(" error: ");
+        print(" error: ", __PRETTY_FUNCTION__);
         perror(nullptr);
         close();
 		exit(EXIT_FAILURE);
 	}
 	else if (_show_extra_info)
 	{
-        print("wrote " + std::to_string(bytes_wrote) + " bytes");
+        print("wrote " + std::to_string(bytes_wrote) + " bytes",
+              __PRETTY_FUNCTION__);
 	}
 	return bytes_wrote;
 }
@@ -137,7 +138,7 @@ void TCPServer::print(std::string str, const char* func)
     if (!str.empty())
         std::cout << str;
 
-    std::cout << std::endl;
+    //std::cout << std::endl;
 }
 //==================================================================================
 void TCPServer::close()

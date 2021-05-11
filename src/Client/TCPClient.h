@@ -26,7 +26,7 @@ class TCPClient
     bool _show_extra_info;
     bool _echo_mode;
 
-    void print(std::string str, const char* func = __PRETTY_FUNCTION__);
+    void print(std::string str, const char* func = nullptr);
     int32_t socket(int32_t domain, int32_t sock_type, int32_t protocol);
     void connect();
     void inet_pton(const char* ip);

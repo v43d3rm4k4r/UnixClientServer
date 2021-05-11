@@ -12,6 +12,8 @@
 #define MAX_FILE_SIZE 1024u // Ethernet frame
 
 void handle_signal(int32_t);
+int32_t client_fd;
+TCPServer TCP_server;
 //==================================================================================
 int main()
 {
@@ -21,21 +23,25 @@ int main()
     sigaction(SIGTERM, &sig_handler, nullptr);
     sigaction(SIGHUP,  &sig_handler, nullptr);
 
-    TCPServer TCP_server;
     TCP_server.listen();
 
 
-    int32_t client_fd = TCP_server.accept();
+    client_fd = TCP_server.accept();
+    printf("[DEBUG] accepted\n");
 
     std::ofstream fout;
-    char buffer[sizeof(MetaData_Download)] = {0};
+    char buffer[sizeof(MetaData_Upload)] = {0};
     size_t bytes_read;
     // Reading meta data buffer
-    while ((bytes_read = TCP_server.read(client_fd, buffer, MAX_FILE_SIZE)) != 0)
+    printf("[DEBUG] reading\n");
+    while ((bytes_read = TCP_server.read(client_fd, buffer, MAX_FILE_SIZE)) != 0 ||
+           bytes_read != 40)
     {
+        printf("[DEBUG] bytes_read == %lu\n", bytes_read);
     }
     auto* meta_data = reinterpret_cast<MetaData*>(buffer);
     size_t file_size = 0;
+    printf("[DEBUG] sizeof(buffer) == %lu\n", sizeof(buffer));
     if (meta_data->type == CmdType::Upload)
     {
         auto meta_data_upload = reinterpret_cast<MetaData_Upload*>(buffer);
@@ -74,5 +80,8 @@ int main()
 //==================================================================================
 void handle_signal(int32_t)
 {
+    printf("[DEBUG] handle_signal() called\n");
+    close(client_fd);
+    TCP_server.close();
     exit(EXIT_SUCCESS);
 }

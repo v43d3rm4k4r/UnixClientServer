@@ -20,7 +20,7 @@ int32_t TCPClient::socket(int32_t domain, int32_t sock_type, int32_t protocol)
     int32_t ret = ::socket(domain, sock_type, protocol);
 	if (ret == -1)
 	{
-        print(" error: ");
+        print(" error: ", __PRETTY_FUNCTION__);
         perror(nullptr);
         close();
 		exit(EXIT_FAILURE);
@@ -41,7 +41,7 @@ void TCPClient::inet_pton(const char* ip)
 	}
 	else if (ret == -1)
 	{
-        print(" error: ");
+        print(" error: ", __PRETTY_FUNCTION__);
         perror(nullptr);
         close();
 		exit(EXIT_FAILURE);
@@ -50,9 +50,10 @@ void TCPClient::inet_pton(const char* ip)
 //==================================================================================
 void TCPClient::connect()
 {
-    if (::connect(_client_sockfd, reinterpret_cast<struct sockaddr*>(&_addr), sizeof(_addr) == -1))
+    if (::connect(_client_sockfd, reinterpret_cast<struct sockaddr*>(&_addr),
+                  sizeof(_addr)) == -1)
 	{
-        print(" error: ");
+        print(" error: ", __PRETTY_FUNCTION__);
         perror(nullptr);
         close();
 		exit(EXIT_FAILURE);
@@ -64,7 +65,7 @@ ssize_t TCPClient::read(void* buf, size_t buf_size)
     ssize_t bytes_readed = ::read(_client_sockfd, buf, buf_size);
 	if (bytes_readed == -1)
 	{
-        print(" error: ");
+        print(" error: ", __PRETTY_FUNCTION__);
         perror(nullptr);
         close();
 		exit(EXIT_FAILURE);
@@ -87,7 +88,7 @@ ssize_t TCPClient::write(const void* buf, size_t buf_size)
     ssize_t bytes_wrote = ::write(_client_sockfd, buf, buf_size);
 	if (bytes_wrote == -1)
 	{
-        print(" error: ");
+        print(" error: ", __PRETTY_FUNCTION__);
         perror(nullptr);
         close();
 		exit(EXIT_FAILURE);
@@ -124,14 +125,14 @@ bool TCPClient::getEchoMode() const
 	return _echo_mode;
 }
 //==================================================================================
-void print(std::string str, const char* func)
+void TCPClient::print(std::string str, const char* func)
 {
     std::cout << "[CLIENT] " << func << ": ";
 
     if (!str.empty())
         std::cout << str;
 
-    std::cout << std::endl;
+    //std::cout << std::endl;
 }
 //==================================================================================
 void TCPClient::close()
