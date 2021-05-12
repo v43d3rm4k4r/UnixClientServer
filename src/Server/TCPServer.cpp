@@ -4,7 +4,7 @@ TCPServer::TCPServer(int32_t port/*=34543*/)
 	: _server_sockfd{0},
     _addr{ 0, 0, {0}, {0} },
 	_show_extra_info{true},
-	_echo_mode{true}
+    _echo_mode{false}
 {
     _server_sockfd = socket(AF_INET, SOCK_STREAM, 0);
     _addr.sin_family = AF_INET;
@@ -76,7 +76,12 @@ ssize_t TCPServer::read(int32_t fd, void* buf, size_t buf_size)
         close();
 		exit(EXIT_FAILURE);
 	}
-	else if (_show_extra_info && bytes_readed == 0)
+    if (_show_extra_info)
+    {
+        print("read " + std::to_string(bytes_readed) + " bytes",
+              __PRETTY_FUNCTION__);
+    }
+    if (_show_extra_info && bytes_readed == 0)
 	{
         print("end of file reached");
 	}
@@ -98,7 +103,7 @@ ssize_t TCPServer::write(int32_t fd, const void* buf, size_t buf_size)
         close();
 		exit(EXIT_FAILURE);
 	}
-	else if (_show_extra_info)
+    else if (_show_extra_info)
 	{
         print("wrote " + std::to_string(bytes_wrote) + " bytes",
               __PRETTY_FUNCTION__);
@@ -138,7 +143,7 @@ void TCPServer::print(std::string str, const char* func)
     if (!str.empty())
         std::cout << str;
 
-    //std::cout << std::endl;
+    std::cout << std::endl;
 }
 //==================================================================================
 void TCPServer::close()

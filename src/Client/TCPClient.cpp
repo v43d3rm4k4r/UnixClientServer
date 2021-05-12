@@ -70,15 +70,19 @@ ssize_t TCPClient::read(void* buf, size_t buf_size)
         close();
 		exit(EXIT_FAILURE);
 	}
-	else if (_show_extra_info && bytes_readed == 0)
-	{
-		std::cout << "[CLIENT] reading: end of file reached" << std::endl;
-	}
+    if (_show_extra_info)
+    {
+        print("read " + std::to_string(bytes_readed) + " bytes",
+              __PRETTY_FUNCTION__);
+    }
+    if (_show_extra_info && bytes_readed == 0)
+    {
+        print("end of file reached");
+    }
 	if (_echo_mode)
 	{
-		std::cout << "[ECHO CLIENT] \"";
+        print("echo message: ");
 		::write(STDOUT_FILENO, buf, bytes_readed); // using outer write() due to avoid writing extra info
-		std::cout << "\"" << std::endl;
 	}
 	return bytes_readed;
 }
@@ -93,10 +97,11 @@ ssize_t TCPClient::write(const void* buf, size_t buf_size)
         close();
 		exit(EXIT_FAILURE);
 	}
-	else if (_show_extra_info)
-	{
-		std::cout << "[CLIENT] writing: wrote " << bytes_wrote << " bytes" << std::endl;
-	}
+    if (_show_extra_info)
+    {
+        print("wrote " + std::to_string(bytes_wrote) + " bytes",
+              __PRETTY_FUNCTION__);
+    }
 	return bytes_wrote;
 }
 //==================================================================================
@@ -132,7 +137,7 @@ void TCPClient::print(std::string str, const char* func)
     if (!str.empty())
         std::cout << str;
 
-    //std::cout << std::endl;
+    std::cout << std::endl;
 }
 //==================================================================================
 void TCPClient::close()

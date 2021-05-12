@@ -3,7 +3,7 @@
 #include <cstddef> // size_t
 #include <cstdint> // uint32_t
 
-#define MAX_FILE_NAME_SIZE 20U
+constexpr size_t MAX_FILE_NAME_SIZE = 20U;
 
 enum class CmdType : uint8_t
 {
