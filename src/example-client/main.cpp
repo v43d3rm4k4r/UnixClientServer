@@ -2,7 +2,6 @@
 #include <fstream>
 #include <cstring>
 #include <regex>
-#include <filesystem>
 #include "../Client/TCPClient.h"
 
 /* TCP CLIENT EXAMPLE
@@ -12,7 +11,7 @@
 #define DEFAULT_FILE_NAME "text.txt"
 #define MAX_FILE_SIZE     1024U // Ethernet frame
 //==================================================================================
-size_t getFileSize(std::string& file_name);
+size_t getFileSize(std::ifstream& file_name);
 //==================================================================================
 int main(int argc, char* argv[])
 {
@@ -37,7 +36,7 @@ int main(int argc, char* argv[])
         std::cout << "Cannot open " << file_name << " file." << std::endl;
         exit(EXIT_FAILURE);
     }
-    size_t file_size = getFileSize(file_name);
+    size_t file_size = getFileSize(fin);
 
 
     TCPClient TCP_client;
@@ -78,8 +77,11 @@ int main(int argc, char* argv[])
     return 0;
 }
 //==================================================================================
-size_t getFileSize(std::string& file_name)
+size_t getFileSize(std::ifstream& fin)
 {
-    std::string path = std::filesystem::canonical(file_name.c_str());
-    return std::filesystem::file_size(path);
+    fin.seekg (0, fin.end);
+    size_t length = fin.tellg();
+    fin.seekg (0, fin.beg);
+
+    return length;
 }
